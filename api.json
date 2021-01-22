@@ -1,80 +1,481 @@
 {
-  "openapi": "3.0.1",
+  "swagger": "2.0",
   "info": {
-    "title": "Foo v1",
-    "description": "Foo API",
+    "version": "v1",
+    "title": "Facturación Electrónica API",
+    "description": "Procesamiento de documentos para ser enviados al Ministerio de Hacienda",
+    "termsOfService": "Términos de servicio.",
     "contact": {
-      "name": "Foo Company",
-      "url": "https://foo.com/",
-      "email": ""
+      "name": "SITSA",
+      "email": "comercial@sitsacr.net"
     },
-    "version": "v1"
+    "license": {
+      "name": "Licencia",
+      "url": "http://sitsacr.net/license"
+    }
   },
+  "host": "localhost",
+  "basePath": "/API_FE",
+  "schemes": [
+    "http"
+  ],
   "paths": {
-    "/WeatherForecast": {
-      "get": {
+    "/api/doc/enviar_documento": {
+      "post": {
         "tags": [
-          "WeatherForecast"
+          "Documento"
+        ],
+        "summary": "Crear, firma y envía el xml con la información brindada",
+        "description": "",
+        "operationId": "Documento_RegistroCliente",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/xml",
+          "text/xml",
+          "application/x-www-form-urlencoded"
+        ],
+        "produces": [
+          "application/json",
+          "text/json",
+          "application/xml",
+          "text/xml"
+        ],
+        "parameters": [
+          {
+            "name": "pDocumento",
+            "in": "body",
+            "description": "Objeto JSON con los valores del documento a enviar",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentoModel"
+            }
+          }
         ],
         "responses": {
+          "401": {
+            "description": "Unauthorized. No se ha indicado el token de acceso"
+          },
           "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
-                  }
-                }
-              }
+            "description": "OK. Devuelve la información con la respuesta de hacienda",
+            "schema": {
+              "type": "object"
             }
+          }
+        }
+      }
+    },
+    "/api/token/authenticate": {
+      "post": {
+        "tags": [
+          "Login"
+        ],
+        "summary": "Valida y genera el token de acceso.",
+        "description": "",
+        "operationId": "Login_Authenticate",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/xml",
+          "text/xml",
+          "application/x-www-form-urlencoded"
+        ],
+        "produces": [
+          "application/json",
+          "text/json",
+          "application/xml",
+          "text/xml"
+        ],
+        "parameters": [
+          {
+            "name": "pToken",
+            "in": "body",
+            "description": "Objeto JSON con los valores de usuario y contrasena",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TokenRequest"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized. No se ha indicado o es incorrecto el usuario o contraseña."
+          },
+          "200": {
+            "description": "OK. Devuelve el token de acceso.",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/api/registro/cliente": {
+      "post": {
+        "tags": [
+          "Registro"
+        ],
+        "summary": "Valida y registra la información del cliente para crear los datos de acceso para el consumo del API",
+        "description": "",
+        "operationId": "Registro_RegistroCliente",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/xml",
+          "text/xml",
+          "application/x-www-form-urlencoded"
+        ],
+        "produces": [
+          "application/json",
+          "text/json",
+          "application/xml",
+          "text/xml"
+        ],
+        "parameters": [
+          {
+            "name": "pCliente",
+            "in": "body",
+            "description": "Objeto JSON con la información para el registro del cliente",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ClienteModel"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized. No se ha indicado el token de acceso"
+          },
+          "200": {
+            "description": "Ok. Devuelve el usuario y contraseña de acceso que tendrá el cliente para el consumo del API",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "409": {
+            "description": "Conflict. Devuelto en caso de que la información del cliente ya se encuentra registrada"
           }
         }
       }
     }
   },
-  "components": {
-    "schemas": {
-      "WeatherForecast": {
-        "type": "object",
-        "properties": {
-          "date": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "temperatureC": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "temperatureF": {
-            "type": "integer",
-            "format": "int32",
-            "readOnly": true
-          },
-          "summary": {
-            "type": "string",
-            "nullable": true
-          }
+  "definitions": {
+    "DocumentoModel": {
+      "type": "object",
+      "properties": {
+        "documento_interno": {
+          "type": "string"
         },
-        "additionalProperties": false
+        "tipo_documento": {
+          "type": "string"
+        },
+        "documento": {
+          "type": "string"
+        },
+        "cliente": {
+          "$ref": "#/definitions/ClienteDocumentoModel"
+        },
+        "condicion_venta": {
+          "type": "string"
+        },
+        "plazo_credito": {
+          "type": "string"
+        },
+        "medio_pago": {
+          "type": "string"
+        },
+        "moneda": {
+          "type": "string"
+        },
+        "fecha": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "docuemnto_referencia": {
+          "type": "string"
+        },
+        "exonerado": {
+          "type": "string"
+        },
+        "numero_orden": {
+          "type": "string"
+        },
+        "enviar_GLN": {
+          "type": "string"
+        },
+        "numero_recepcion": {
+          "type": "string"
+        },
+        "fecha_recepcion": {
+          "type": "string"
+        },
+        "numero_aviso": {
+          "type": "string"
+        },
+        "alias": {
+          "type": "string"
+        },
+        "observaciones": {
+          "type": "string"
+        },
+        "notas": {
+          "type": "string"
+        },
+        "notas_adicionales": {
+          "type": "string"
+        },
+        "orden_compra": {
+          "type": "string"
+        },
+        "exoneracion": {
+          "$ref": "#/definitions/ExoneracionModel"
+        },
+        "factor_iva": {
+          "format": "double",
+          "type": "number"
+        },
+        "excepcion": {
+          "$ref": "#/definitions/ExcepcionModel"
+        },
+        "lineas_documento": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DocumentoLineaModel"
+          }
+        }
       }
+    },
+    "ClienteDocumentoModel": {
+      "type": "object",
+      "properties": {
+        "tipo_identificacion": {
+          "type": "string"
+        },
+        "identificacion": {
+          "type": "string"
+        },
+        "nombre": {
+          "type": "string"
+        },
+        "correo": {
+          "type": "string"
+        },
+        "telefono": {
+          "type": "string"
+        },
+        "tipo_cliente": {
+          "type": "string"
+        }
+      }
+    },
+    "ExoneracionModel": {
+      "type": "object",
+      "properties": {
+        "Documento": {
+          "type": "string"
+        },
+        "Fecha": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "Institucion": {
+          "type": "string"
+        },
+        "Impuesto1": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "Impuesto2": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "TipoDoc": {
+          "type": "string"
+        }
+      }
+    },
+    "ExcepcionModel": {
+      "type": "object",
+      "properties": {
+        "TipoImpuesto": {
+          "type": "string"
+        },
+        "CodTarifa": {
+          "type": "string"
+        },
+        "Porcentaje": {
+          "format": "double",
+          "type": "number"
+        }
+      }
+    },
+    "DocumentoLineaModel": {
+      "type": "object",
+      "properties": {
+        "numero_linea": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "articulo": {
+          "type": "string"
+        },
+        "cantidad": {
+          "format": "double",
+          "type": "number"
+        },
+        "unidad_medida": {
+          "type": "string"
+        },
+        "detalle": {
+          "type": "string"
+        },
+        "precio_unitario": {
+          "format": "double",
+          "type": "number"
+        },
+        "monto_total": {
+          "format": "double",
+          "type": "number"
+        },
+        "monto_descuento": {
+          "format": "double",
+          "type": "number"
+        },
+        "impuesto": {
+          "type": "string"
+        },
+        "impuesto2": {
+          "type": "string"
+        },
+        "tarifa_impuesto2": {
+          "format": "double",
+          "type": "number"
+        },
+        "codigo_tarifa_impuesto2": {
+          "type": "string"
+        },
+        "codigo_producto_servicio": {
+          "type": "string"
+        },
+        "tipo_codigo_producto": {
+          "type": "string"
+        },
+        "exonerado": {
+          "type": "string"
+        },
+        "partida_arancelaria": {
+          "type": "string"
+        }
+      }
+    },
+    "TokenRequest": {
+      "type": "object",
+      "properties": {
+        "Usuario": {
+          "type": "string"
+        },
+        "Contrasena": {
+          "type": "string"
+        }
+      }
+    },
+    "ClienteModel": {
+      "description": "",
+      "type": "object",
+      "properties": {
+        "tipo_identificacion": {
+          "description": "Tipo de indentificación del cliente a registrar",
+          "type": "string"
+        },
+        "identificacion": {
+          "type": "string"
+        },
+        "nombre": {
+          "type": "string"
+        },
+        "nombre_comercial": {
+          "type": "string"
+        },
+        "codigo_actividad": {
+          "type": "string"
+        },
+        "logo": {
+          "description": "Logo de la compañía en Base64 (string)",
+          "type": "string"
+        },
+        "telefono": {
+          "type": "string"
+        },
+        "fax": {
+          "type": "string"
+        },
+        "correo": {
+          "type": "string"
+        },
+        "provincia": {
+          "type": "string"
+        },
+        "canton": {
+          "type": "string"
+        },
+        "distrito": {
+          "type": "string"
+        },
+        "barrio": {
+          "type": "string"
+        },
+        "otras_senas": {
+          "type": "string"
+        },
+        "datos_hacienda": {
+          "$ref": "#/definitions/DatosHaciendaModel"
+        },
+        "DatosDeCorreo": {
+          "$ref": "#/definitions/CorreoModel"
+        }
+      }
+    },
+    "DatosHaciendaModel": {
+      "type": "object",
+      "properties": {
+        "usuario_token": {
+          "type": "string"
+        },
+        "contrasena": {
+          "type": "string"
+        },
+        "archivo_llave": {
+          "type": "string"
+        },
+        "clave": {
+          "type": "string"
+        }
+      }
+    },
+    "CorreoModel": {
+      "type": "object",
+      "properties": {
+        "Correo": {
+          "type": "string"
+        },
+        "SMTP": {
+          "type": "string"
+        },
+        "PuertoSMTP": {
+          "type": "string"
+        },
+        "ContrasennaCorreo": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "Authorization": {
+      "type": "apiKey",
+      "description": "Introduce el Token JWT aquí.",
+      "name": "Bearer",
+      "in": "header"
     }
   }
 }
